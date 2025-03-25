@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f0f9ff;
+    }
+    .task-list {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+</style>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
+        <h1 class="text-3xl font-bold text-center mb-8 text-sky-700">Task Management System</h1>
+        
+        <!-- Task Form -->
+        <form id="taskForm" class="mb-8 space-y-4">
+            <div>
+                <input type="text" id="taskTitle" placeholder="Task Title" required
+                    class="w-full p-3 border border-sky-200 rounded-lg focus:outline-none focus:border-sky-500">
+            </div>
+            <div>
+                <textarea id="taskDescription" placeholder="Task Description (Optional)" rows="3"
+                    class="w-full p-3 border border-sky-200 rounded-lg focus:outline-none focus:border-sky-500"></textarea>
+            </div>
+            <button type="submit" 
+                class="w-full bg-sky-600 text-white py-3 rounded-lg hover:bg-sky-700 transition duration-300">
+                Add Task
+            </button>
+        </form>
+
+        <!-- Task List -->
+        <div class="task-list space-y-4">
+            <h2 class="text-xl text-center font-semibold mb-4 text-sky-800">Your Tasks</h2>
+            <div id="taskContainer" class="space-y-3">
+                <!-- Tasks will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        
+        // Generate unique ID
+        const generateId = () => '_' + Math.random().toString(36).substr(2, 9);
+
+        // Add new task
+        document.getElementById('taskForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const titleInput = document.getElementById('taskTitle');
+            const descInput = document.getElementById('taskDescription');
+            
+            const newTask = {
+                id: generateId(),
+                title: titleInput.value,
+                description: descInput.value,
+                completed: false
+            };
+            
+            tasks.push(newTask);
+            renderTasks();
+            
+            titleInput.value = '';
+            descInput.value = '';
+        });
+
+        // Delete task
+        const deleteTask = (id) => {
+            tasks = tasks.filter(task => task.id !== id);
+            renderTasks();
+        };
+
+        // Toggle task completion
+        const toggleComplete = (id) => {
+            tasks = tasks.map(task => 
+                task.id === id ? {...task, completed: !task.completed} : task
+            );
+            renderTasks();
+        };
+
+        // Edit task
+        const editTask = (id) => {
+            const task = tasks.find(t => t.id === id);
+            const newTitle = prompt('Edit task title:', task.title);
+            const newDesc = prompt('Edit task description:', task.description);
+            
+            if (newTitle !== null) {
+                tasks = tasks.map(task => 
+                    task.id === id ? 
+                    {...task, title: newTitle, description: newDesc} : 
+                    task
+                );
+                renderTasks();
+            }
+        };
+
+        // Render tasks
+        const renderTasks = () => {
+            const container = document.getElementById('taskContainer');
+            container.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const taskElement = document.createElement('div');
+                taskElement.className = `p-4 border ${task.completed ? 'bg-green-50' : 'bg-white'} rounded-lg shadow-sm`;
+                taskElement.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                                class="w-5 h-5 text-sky-600" 
+                                onclick="toggleComplete('${task.id}')">
+                            <div>
+                                <h3 class="font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}">${task.title}</h3>
+                                ${task.description ? `<p class="text-sm text-gray-500">${task.description}</p>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="editTask('${task.id}')" 
+                                class="text-sky-600 hover:text-sky-800">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button onclick="deleteTask('${task.id}')" 
+                                class="text-red-600 hover:text-red-800">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(taskElement);
+            });
+        };
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
